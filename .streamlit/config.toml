@@ -1,0 +1,16 @@
+# 深色氣象儀表板主題
+# 顏色取自 dataviz 設計規範的深色 ink/surface,並以對比驗證器實測過:
+#   primary ink #ffffff 對卡片面 16.78:1、secondary #c3c2b7 9.37:1、muted #898781 4.67:1
+[theme]
+base = "dark"
+primaryColor = "#e46d40"             # 溫度色階中段(單一橘色系)
+backgroundColor = "#0b1220"          # 頁面底
+secondaryBackgroundColor = "#131d33" # 卡片 / 側邊欄表面
+textColor = "#e8edf7"
+font = "sans serif"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
