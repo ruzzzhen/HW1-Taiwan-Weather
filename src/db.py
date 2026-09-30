@@ -19,7 +19,7 @@ PathLike = Union[str, Path]
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS forecast (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    region     TEXT    NOT NULL,          -- 六大區域(北部/中部/南部/東北部/東部/東南部/外島)
+    region     TEXT    NOT NULL,          -- 四大區域(北部/中部/南部/東部/外島)
     city       TEXT    NOT NULL,          -- 縣市名稱(已正規化為「臺」)
     date       TEXT    NOT NULL,          -- YYYY-MM-DD
     min_temp   REAL,                      -- 當日最低溫(°C)

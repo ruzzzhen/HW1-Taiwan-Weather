@@ -34,7 +34,7 @@ def test_row_has_all_required_fields(sample_payload):
 def test_region_is_mapped_from_city(sample_payload):
     rows = parse_forecast(sample_payload)
     assert find(rows, "臺北市", "2026-09-30")["region"] == "北部"
-    assert find(rows, "臺東縣", "2026-09-30")["region"] == "東南部"
+    assert find(rows, "臺東縣", "2026-09-30")["region"] == "東部"
 
 
 def test_city_name_normalized_to_tai(sample_payload):

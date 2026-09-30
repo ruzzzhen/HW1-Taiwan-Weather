@@ -1,4 +1,4 @@
-"""測試縣市 → 六大區域對應表。"""
+"""測試縣市 → 四大區域對應表。"""
 from __future__ import annotations
 
 from src.regions import (
@@ -16,9 +16,16 @@ def test_covers_all_22_cities():
     assert len(CITY_TO_REGION) == 22
 
 
-def test_six_main_regions_plus_outlying():
-    assert REGION_ORDER == ["北部", "中部", "南部", "東北部", "東部", "東南部"]
+def test_four_main_regions_plus_outlying():
+    assert REGION_ORDER == ["北部", "中部", "南部", "東部"]
     assert set(REGION_TO_CITIES) == set(REGION_ORDER) | {OUTLYING_REGION}
+
+
+def test_east_is_a_single_region():
+    """宜蘭、花蓮、臺東合併成單一個「東部」,不再細分東北部 / 東南部。"""
+    assert REGION_TO_CITIES["東部"] == ["宜蘭縣", "花蓮縣", "臺東縣"]
+    assert "東北部" not in REGION_TO_CITIES
+    assert "東南部" not in REGION_TO_CITIES
 
 
 def test_no_city_belongs_to_two_regions():
@@ -38,9 +45,9 @@ def test_city_to_region_accepts_both_variants():
     assert city_to_region("臺北市") == "北部"
     assert city_to_region("台北市") == "北部"
     assert city_to_region("台中市") == "中部"
-    assert city_to_region("宜蘭縣") == "東北部"
+    assert city_to_region("宜蘭縣") == "東部"
     assert city_to_region("花蓮縣") == "東部"
-    assert city_to_region("臺東縣") == "東南部"
+    assert city_to_region("臺東縣") == "東部"
     assert city_to_region("澎湖縣") == OUTLYING_REGION
 
 

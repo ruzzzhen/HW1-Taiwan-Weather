@@ -1,16 +1,18 @@
-# 深色氣象儀表板主題
-# 顏色取自 dataviz 設計規範的深色 ink/surface,並以對比驗證器實測過:
-#   primary ink #ffffff 對卡片面 16.78:1、secondary #c3c2b7 9.37:1、muted #898781 4.67:1
+# 清爽淡藍卡片主題
+# 顏色取自 dataviz 設計規範的淺色 ink/surface,並以對比驗證器實測過:
+#   primary ink #0b0b0b 對白卡片 19.68:1、secondary #52514e 7.94:1、muted #6f6e6a 5.10:1
 [theme]
-base = "dark"
-primaryColor = "#e46d40"             # 溫度色階中段(單一橘色系)
-backgroundColor = "#0b1220"          # 頁面底
-secondaryBackgroundColor = "#131d33" # 卡片 / 側邊欄表面
-textColor = "#e8edf7"
+base = "light"
+primaryColor = "#c04c1b"             # 溫度色階中段(單一橘色系)
+backgroundColor = "#f7fafd"          # 頁面底
+secondaryBackgroundColor = "#ffffff" # 卡片 / 側邊欄表面
+textColor = "#0b0b0b"
 font = "sans serif"
 
 [server]
 headless = true
+# 有些機器的 inotify watch 數量有上限,改用輪詢才不會啟動時噴 ENOSPC
+fileWatcherType = "poll"
 
 [browser]
 gatherUsageStats = false

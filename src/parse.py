@@ -150,7 +150,7 @@ def _parse_one_city(location: dict) -> list[dict]:
 
     region = city_to_region(city)
     if region is None:
-        logger.warning("縣市「%s」不在六大區域對應表中,歸類為「%s」", city, UNCLASSIFIED)
+        logger.warning("縣市「%s」不在四大區域對應表中,歸類為「%s」", city, UNCLASSIFIED)
         region = UNCLASSIFIED
 
     lat = _to_float(location.get("Latitude"))

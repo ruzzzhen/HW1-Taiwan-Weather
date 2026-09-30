@@ -16,18 +16,18 @@ from src.theme import (
 
 # ---------- 色階 ----------
 def test_ramp_is_single_hue_ordered():
-    """色階有 7 階,且頭尾分別是最深與最淺。"""
+    """色階有 7 階,淺色底由淺到深代表低溫到高溫。"""
     assert len(TEMP_RAMP) == 7
-    assert TEMP_RAMP[0] == "#963300"
-    assert TEMP_RAMP[-1] == "#ffcab6"
+    assert TEMP_RAMP[0] == "#ff8e64"   # 最淺 = 低溫
+    assert TEMP_RAMP[-1] == "#6f2300"  # 最深 = 高溫
 
 
-def test_low_temp_gets_dark_end():
+def test_low_temp_gets_light_end():
     lo, _ = TEMP_DOMAIN
     assert temp_color(lo) == TEMP_RAMP[0]
 
 
-def test_high_temp_gets_light_end():
+def test_high_temp_gets_dark_end():
     _, hi = TEMP_DOMAIN
     assert temp_color(hi) == TEMP_RAMP[-1]
 

@@ -1,10 +1,10 @@
-"""Taiwan Weather Forecast —— Streamlit 深色氣象儀表板。
+"""Taiwan Weather Forecast —— Streamlit 清爽淡藍卡片介面。
 
 資料流:CWA Open Data API → src/parse.py 解析 → SQLite → 本頁讀取顯示。
 本頁只負責「顯示」與「觸發更新」,抓取與解析邏輯都在 src/ 底下,方便單獨測試。
 
 視覺設計依據見 src/theme.py:溫度是量值,所以用「單一橘色系 sequential 色階」,
-不用彩虹色;文字一律用中性 ink,顏色只由溫度條這個標記承載。
+不用彩虹色;淺色底由淺到深代表低溫到高溫,文字一律用中性 ink。
 """
 from __future__ import annotations
 
@@ -19,6 +19,8 @@ from src.pipeline import refresh_data
 from src.regions import OUTLYING_REGION, REGION_ORDER, REGION_TO_CITIES
 from src.theme import (
     HAIRLINE,
+    PLANE_TOP,
+    SHADOW,
     INK,
     INK_MUTED,
     INK_SECONDARY,
@@ -47,9 +49,9 @@ CSS = f"""
 <style>
 .stApp {{
     background:
-        radial-gradient(1100px 620px at 12% -8%, #16233f 0%, rgba(22,35,63,0) 62%),
-        radial-gradient(900px 520px at 92% 4%, #1a2036 0%, rgba(26,32,54,0) 58%),
-        {PLANE};
+        radial-gradient(1200px 520px at 10% -10%, #dbeafe 0%, rgba(219,234,254,0) 60%),
+        radial-gradient(900px 460px at 95% 0%, #e0f2fe 0%, rgba(224,242,254,0) 55%),
+        linear-gradient(180deg, {PLANE_TOP} 0%, {PLANE} 38%, #f7fafd 100%);
 }}
 .block-container {{ padding-top: 2.2rem; padding-bottom: 3rem; max-width: 1320px; }}
 
@@ -65,41 +67,41 @@ CSS = f"""
 .wx-chip {{
     background: {SURFACE}; border: 1px solid {HAIRLINE}; border-radius: 999px;
     padding: .38rem .85rem; font-size: .82rem; color: {INK_SECONDARY};
-    display: inline-flex; align-items: center; gap: .45rem;
+    display: inline-flex; align-items: center; gap: .45rem; box-shadow: {SHADOW};
 }}
 .wx-chip b {{ color: {INK}; font-weight: 650; font-size: .95rem; }}
 .wx-dot {{ width: 9px; height: 9px; border-radius: 50%; display: inline-block; }}
 
 /* ---- 區域卡片 ---- */
 .wx-card {{
-    background: {SURFACE}; border: 1px solid {HAIRLINE}; border-radius: 16px;
-    padding: 1rem 1.1rem 1.05rem 1.1rem; height: 100%;
+    background: {SURFACE}; border: 1px solid {HAIRLINE}; border-radius: 18px;
+    padding: 1.15rem 1.2rem 1.1rem 1.2rem; height: 100%; box-shadow: {SHADOW};
 }}
 .wx-card-top {{
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: .55rem;
+    margin-bottom: .6rem;
 }}
 .wx-region {{
-    color: {INK_MUTED}; font-size: .78rem; font-weight: 600; letter-spacing: .09em;
+    color: {INK_MUTED}; font-size: .8rem; font-weight: 600; letter-spacing: .09em;
 }}
-.wx-icon {{ font-size: 1.45rem; line-height: 1; }}
+.wx-icon {{ font-size: 1.6rem; line-height: 1; }}
 .wx-temp {{
-    color: {INK}; font-size: 1.95rem; font-weight: 700; line-height: 1.1;
+    color: {INK}; font-size: 2.05rem; font-weight: 700; line-height: 1.1;
     letter-spacing: -0.02em;
 }}
-.wx-temp .wx-lo {{ color: {INK_SECONDARY}; font-weight: 550; font-size: 1.35rem; }}
+.wx-temp .wx-lo {{ color: {INK_SECONDARY}; font-weight: 550; font-size: 1.4rem; }}
 .wx-temp .wx-sep {{ color: {INK_MUTED}; font-weight: 400; font-size: 1.15rem; margin: 0 .18rem; }}
 .wx-bar {{
-    position: relative; height: 6px; border-radius: 3px;
-    background: rgba(255,255,255,0.08); margin: .7rem 0 .6rem 0; overflow: hidden;
+    position: relative; height: 7px; border-radius: 4px;
+    background: rgba(11,11,11,0.07); margin: .75rem 0 .65rem 0; overflow: hidden;
 }}
-.wx-bar-fill {{ position: absolute; top: 0; height: 100%; border-radius: 3px; }}
+.wx-bar-fill {{ position: absolute; top: 0; height: 100%; border-radius: 4px; }}
 .wx-meta {{
     display: flex; align-items: center; justify-content: space-between;
-    font-size: .8rem; color: {INK_SECONDARY};
+    font-size: .8rem; color: {INK_SECONDARY}; gap: .5rem;
 }}
-.wx-pop {{ color: {INK_MUTED}; }}
-.wx-scale-note {{ color: {INK_MUTED}; font-size: .74rem; margin: .5rem 0 .2rem 0; }}
+.wx-pop {{ color: {INK_MUTED}; white-space: nowrap; }}
+.wx-scale-note {{ color: {INK_MUTED}; font-size: .74rem; margin: .55rem 0 .2rem 0; }}
 
 /* ---- 區塊標題 ---- */
 .wx-section {{
@@ -204,7 +206,7 @@ def render_header(dates: list) -> str:
     with left:
         st.markdown('<p class="wx-title">🌤️ Taiwan Weather Forecast</p>', unsafe_allow_html=True)
         st.markdown(
-            '<p class="wx-subtitle">台灣六大區域一週天氣預報 · 資料來源:中央氣象署開放資料平臺</p>',
+            '<p class="wx-subtitle">台灣四大區域一週天氣預報 · 資料來源:中央氣象署開放資料平臺</p>',
             unsafe_allow_html=True,
         )
     with right:
@@ -295,13 +297,12 @@ def card_html(region: str, row) -> str:
 
 
 def render_region_cards(table: pd.DataFrame) -> None:
-    """六大區域卡片,3 欄 × 2 列。"""
-    for start in (0, 3):
-        cols = st.columns(3, gap="medium")
-        for col, region in zip(cols, REGION_ORDER[start:start + 3]):
-            row = table.loc[region] if region in table.index else None
-            with col:
-                st.markdown(card_html(region, row), unsafe_allow_html=True)
+    """四大區域卡片,一排四張。"""
+    cols = st.columns(len(REGION_ORDER), gap="medium")
+    for col, region in zip(cols, REGION_ORDER):
+        row = table.loc[region] if region in table.index else None
+        with col:
+            st.markdown(card_html(region, row), unsafe_allow_html=True)
 
     lo, hi = TEMP_DOMAIN
     st.markdown(
@@ -350,7 +351,7 @@ def render_map(day: pd.DataFrame) -> None:
             zoom=6.15,
             center={"lat": 23.75, "lon": 120.95},
             height=540,
-            map_style="carto-darkmatter",
+            map_style="carto-positron",
         )
         fig.update_traces(marker={"size": 15, "opacity": 0.92})
         fig.update_layout(
@@ -364,7 +365,7 @@ def render_map(day: pd.DataFrame) -> None:
                 thickness=12,
                 len=0.75,
             ),
-            hoverlabel=dict(bgcolor=SURFACE, font=dict(color=INK)),
+            hoverlabel=dict(bgcolor=SURFACE, font=dict(color=INK), bordercolor="rgba(11,11,11,0.15)"),
         )
         st.plotly_chart(fig, use_container_width=True)
         st.caption("圓點顏色代表當日最高溫(色階與上方溫度條相同),滑鼠移上去可看該縣市詳細預報。")
@@ -385,13 +386,13 @@ def render_tables(day: pd.DataFrame, table: pd.DataFrame) -> None:
     }
 
     main_rows = [r for r in REGION_ORDER if r in table.index]
-    with st.expander("📋 六大區域彙整表", expanded=False):
+    with st.expander("📋 四大區域彙整表", expanded=False):
         if main_rows:
             main = table.loc[main_rows, display_cols].copy()
             main.index.name = "區域"
             st.dataframe(main, width="stretch", column_config=column_config)
         else:
-            st.warning("這一天沒有六大區域的資料。")
+            st.warning("這一天沒有四大區域的資料。")
 
     with st.expander("🔍 各縣市明細(22 縣市)", expanded=False):
         detail = day[["region", "city", "min_temp", "max_temp", "weather", "pop"]].copy()
@@ -439,8 +440,8 @@ def render_sidebar() -> None:
                 f'<div style="display:flex;border-radius:4px;overflow:hidden;margin-bottom:.4rem">'
                 f'{swatches}</div>'
                 f'<p style="color:{INK_MUTED};font-size:.75rem;margin:0">'
-                f'{lo:.0f}°C(深)→ {hi:.0f}°C(淺)。溫度是量值,所以用單一色相的漸層,'
-                f'不用彩虹色;深色底下越高的溫度越亮,才看得清楚。</p>',
+                f'{lo:.0f}°C(淺)→ {hi:.0f}°C(深)。溫度是量值,所以用單一色相的漸層,'
+                f'不用彩虹色;淺色底下越高的溫度越深,對比才夠。</p>',
                 unsafe_allow_html=True,
             )
 
@@ -480,7 +481,7 @@ def main() -> None:
     table = aggregate_regions(day)
 
     render_stats(day)
-    st.markdown('<p class="wx-section">六大區域</p>', unsafe_allow_html=True)
+    st.markdown('<p class="wx-section">四大區域</p>', unsafe_allow_html=True)
     render_region_cards(table)
     render_map(day)
     render_tables(day, table)
