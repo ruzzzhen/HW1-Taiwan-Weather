@@ -1,0 +1,43 @@
+# ===== 機密資訊(絕對不可 commit)=====
+.env
+.env.*
+!.env.example
+
+# ===== Python 虛擬環境 =====
+.venv/
+venv/
+env/
+
+# ===== Python 快取 =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+
+# ===== 資料庫與原始資料 =====
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/raw/
+
+# ===== 測試與工具快取 =====
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ===== Streamlit =====
+.streamlit/secrets.toml
+
+# ===== 編輯器 / 作業系統 =====
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

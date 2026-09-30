@@ -1,0 +1,7 @@
+# HW1-Taiwan-Weather 直接依賴(Python 3.9+)
+requests==2.32.5        # 呼叫 CWA Open Data API
+python-dotenv==1.2.1    # 從 .env 讀取 API 授權碼
+pandas==2.3.3           # 資料整理與表格
+streamlit==1.50.0       # 網頁介面
+plotly==7.1.0           # 互動式地圖
+pytest==8.4.2           # 單元測試
