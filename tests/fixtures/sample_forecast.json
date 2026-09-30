@@ -1,0 +1,327 @@
+{
+  "success": "true",
+  "records": {
+    "Locations": [
+      {
+        "DatasetDescription": "臺灣各縣市未來1週天氣預報(測試用假資料)",
+        "LocationsName": "臺灣",
+        "Dataset": "TEST",
+        "Location": [
+          {
+            "LocationName": "臺北市",
+            "Geocode": "63000",
+            "Latitude": "25.0478",
+            "Longitude": "121.5319",
+            "WeatherElement": [
+              {
+                "ElementName": "最高溫度",
+                "Time": [
+                  {
+                    "StartTime": "2026-09-30T06:00:00+08:00",
+                    "EndTime": "2026-09-30T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MaxTemperature": "31"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-09-30T18:00:00+08:00",
+                    "EndTime": "2026-10-01T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MaxTemperature": "27"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-10-01T06:00:00+08:00",
+                    "EndTime": "2026-10-01T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MaxTemperature": "33"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-10-01T18:00:00+08:00",
+                    "EndTime": "2026-10-02T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MaxTemperature": "28"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "ElementName": "最低溫度",
+                "Time": [
+                  {
+                    "StartTime": "2026-09-30T06:00:00+08:00",
+                    "EndTime": "2026-09-30T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MinTemperature": "26"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-09-30T18:00:00+08:00",
+                    "EndTime": "2026-10-01T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MinTemperature": "24"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-10-01T06:00:00+08:00",
+                    "EndTime": "2026-10-01T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MinTemperature": "27"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-10-01T18:00:00+08:00",
+                    "EndTime": "2026-10-02T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MinTemperature": "25"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "ElementName": "天氣現象",
+                "Time": [
+                  {
+                    "StartTime": "2026-09-30T06:00:00+08:00",
+                    "EndTime": "2026-09-30T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "Weather": "晴時多雲",
+                        "WeatherCode": "02"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-09-30T18:00:00+08:00",
+                    "EndTime": "2026-10-01T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "Weather": "多雲",
+                        "WeatherCode": "04"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-10-01T06:00:00+08:00",
+                    "EndTime": "2026-10-01T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "Weather": "多雲短暫雨",
+                        "WeatherCode": "08"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-10-01T18:00:00+08:00",
+                    "EndTime": "2026-10-02T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "Weather": "陰天",
+                        "WeatherCode": "07"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "ElementName": "12小時降雨機率",
+                "Time": [
+                  {
+                    "StartTime": "2026-09-30T06:00:00+08:00",
+                    "EndTime": "2026-09-30T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "ProbabilityOfPrecipitation": "10"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-09-30T18:00:00+08:00",
+                    "EndTime": "2026-10-01T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "ProbabilityOfPrecipitation": "40"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-10-01T06:00:00+08:00",
+                    "EndTime": "2026-10-01T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "ProbabilityOfPrecipitation": "70"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-10-01T18:00:00+08:00",
+                    "EndTime": "2026-10-02T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "ProbabilityOfPrecipitation": "60"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "ElementName": "平均相對濕度",
+                "Time": [
+                  {
+                    "StartTime": "2026-09-30T06:00:00+08:00",
+                    "EndTime": "2026-09-30T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "RelativeHumidity": "78"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "LocationName": "台東縣",
+            "Geocode": "10014",
+            "Latitude": "22.7583",
+            "Longitude": "121.1444",
+            "WeatherElement": [
+              {
+                "ElementName": "最高溫度",
+                "Time": [
+                  {
+                    "StartTime": "2026-09-30T06:00:00+08:00",
+                    "EndTime": "2026-09-30T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MaxTemperature": "30"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-09-30T18:00:00+08:00",
+                    "EndTime": "2026-10-01T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MaxTemperature": "26"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-10-01T06:00:00+08:00",
+                    "EndTime": "2026-10-01T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MaxTemperature": "32"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "ElementName": "最低溫度",
+                "Time": [
+                  {
+                    "StartTime": "2026-09-30T06:00:00+08:00",
+                    "EndTime": "2026-09-30T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MinTemperature": "25"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-09-30T18:00:00+08:00",
+                    "EndTime": "2026-10-01T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MinTemperature": "23"
+                      }
+                    ]
+                  },
+                  {
+                    "StartTime": "2026-10-01T06:00:00+08:00",
+                    "EndTime": "2026-10-01T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MinTemperature": "-99"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "ElementName": "天氣現象",
+                "Time": [
+                  {
+                    "StartTime": "2026-09-30T18:00:00+08:00",
+                    "EndTime": "2026-10-01T06:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "Weather": "短暫陣雨",
+                        "WeatherCode": "11"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "LocationName": "火星市",
+            "Geocode": "99999",
+            "Latitude": "0.0",
+            "Longitude": "0.0",
+            "WeatherElement": [
+              {
+                "ElementName": "最高溫度",
+                "Time": [
+                  {
+                    "StartTime": "2026-09-30T06:00:00+08:00",
+                    "EndTime": "2026-09-30T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MaxTemperature": "99"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "ElementName": "最低溫度",
+                "Time": [
+                  {
+                    "StartTime": "2026-09-30T06:00:00+08:00",
+                    "EndTime": "2026-09-30T18:00:00+08:00",
+                    "ElementValue": [
+                      {
+                        "MinTemperature": "-40"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
