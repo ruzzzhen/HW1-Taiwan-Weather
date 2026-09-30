@@ -53,7 +53,13 @@ CSS = f"""
         radial-gradient(900px 460px at 95% 0%, #e0f2fe 0%, rgba(224,242,254,0) 55%),
         linear-gradient(180deg, {PLANE_TOP} 0%, {PLANE} 38%, #f7fafd 100%);
 }}
-.block-container {{ padding-top: 2.2rem; padding-bottom: 3rem; max-width: 1320px; }}
+/* Streamlit 固定在最上方的工具列(Deploy 按鈕、⋮ 選單、側邊欄收放鈕)是浮在內容之上的,
+   預設 padding-top 要留夠空間才不會蓋住標題。順便把 Deploy 按鈕藏起來(本專案不需要)。*/
+[data-testid="stAppHeader"] {{ background: transparent; box-shadow: none; }}
+[data-testid="stAppDeployButton"] {{ display: none; }}
+[data-testid="stMainBlockContainer"], .block-container {{
+    padding-top: 4.75rem; padding-bottom: 3rem; max-width: 1320px;
+}}
 
 /* ---- 頁首 ---- */
 .wx-title {{
@@ -351,9 +357,24 @@ def render_map(day: pd.DataFrame) -> None:
             zoom=6.15,
             center={"lat": 23.75, "lon": 120.95},
             height=540,
-            map_style="carto-positron",
+            map_style="carto-voyager",
         )
-        fig.update_traces(marker={"size": 15, "opacity": 0.92})
+        fig.update_traces(marker={"size": 16, "opacity": 1.0})
+
+        # scattermap 的 marker 不支援 line(外框),所以在彩色點底下疊一層
+        # 稍大的白點當作「底環」,彩色點放到有顏色的底圖上才不會糊掉。
+        import plotly.graph_objects as go
+
+        halo = go.Scattermap(
+            lat=geo["lat"],
+            lon=geo["lon"],
+            mode="markers",
+            marker={"size": 23, "color": "rgba(255,255,255,0.95)"},
+            hoverinfo="skip",
+            showlegend=False,
+        )
+        fig.add_trace(halo)
+        fig.data = (fig.data[1], fig.data[0])  # 把白色底環排到彩色點下面
         fig.update_layout(
             margin=dict(l=0, r=0, t=0, b=0),
             paper_bgcolor="rgba(0,0,0,0)",
@@ -364,6 +385,8 @@ def render_map(day: pd.DataFrame) -> None:
                 outlinewidth=0,
                 thickness=12,
                 len=0.75,
+                bgcolor="rgba(255,255,255,0.88)",
+                x=0.99,
             ),
             hoverlabel=dict(bgcolor=SURFACE, font=dict(color=INK), bordercolor="rgba(11,11,11,0.15)"),
         )
