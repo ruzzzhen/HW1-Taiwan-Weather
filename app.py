@@ -175,6 +175,34 @@ def format_date_label(date: str) -> str:
         return date
 
 
+def upcoming_dates(dates: list) -> list:
+    """只留今天(含)以後的日期。
+
+    資料庫會累積昨天、前天的預報,留在選單裡只會干擾。
+    萬一全部都是過去的日期(例如很久沒更新又抓不到新資料),就退回原清單,
+    至少還有東西可看,不要變成空白頁。
+    """
+    today = date.today().isoformat()
+    future = [value for value in dates if value >= today]
+    return future or dates
+
+
+def is_data_stale(dates: list, last_updated, today: str = None) -> bool:
+    """判斷資料庫裡的預報是不是該重抓了。
+
+    三種情況視為過期:完全沒有資料、沒有今天的預報、
+    或者最後一次寫入不是今天(氣象署一天會更新好幾次)。
+
+    寫成純函式(today 可注入)才方便測試,不用真的改系統時間。
+    """
+    today = today or date.today().isoformat()
+    if not dates:
+        return True
+    if today not in dates:
+        return True
+    return not str(last_updated or "").startswith(today)
+
+
 def default_date_index(dates: list) -> int:
     """預設選今天。資料庫可能還留著昨天的預報,不處理的話開頁會看到過期資料。
 
@@ -216,6 +244,48 @@ def do_refresh() -> None:
         f"✅ 更新完成:{result['rows']} 列 / {result['cities']} 個縣市 / "
         f"{len(result['dates'])} 天({result['dates'][0]} ~ {result['dates'][-1]})"
     )
+
+
+def auto_refresh_if_stale() -> None:
+    """開頁時若資料不是今天的,自動抓一次。
+
+    用 session_state 擋住重複觸發:Streamlit 每次互動都會把整個腳本重跑一遍,
+    沒有這個旗標的話,每點一下日期選擇器就會打一次 API。
+    失敗不中斷畫面,只記下錯誤訊息,讓使用者還能看到既有資料。
+    """
+    if st.session_state.get("auto_refresh_attempted"):
+        return
+    st.session_state["auto_refresh_attempted"] = True
+
+    dates = load_dates() if db.table_exists() else []
+    if not is_data_stale(dates, load_last_updated() if dates else None):
+        return
+
+    with st.spinner("資料不是今天的,正在自動抓取最新預報…"):
+        try:
+            result = refresh_data()
+        except (MissingAPIKeyError, WeatherAPIError, ParseError) as exc:
+            st.session_state["auto_refresh_error"] = str(exc)
+            return
+
+    clear_caches()
+    st.session_state["auto_refresh_result"] = result
+
+
+def show_auto_refresh_notice() -> None:
+    """把自動更新的結果顯示出來,讓使用者知道畫面上的資料是剛抓的。"""
+    result = st.session_state.pop("auto_refresh_result", None)
+    if result:
+        st.toast(
+            f"已自動更新為今天的預報({result['rows']} 列 / {result['cities']} 個縣市)",
+            icon="🔄",
+        )
+
+    error = st.session_state.pop("auto_refresh_error", None)
+    if error:
+        st.warning(
+            f"⚠️ 自動更新失敗,畫面顯示的是先前抓到的資料。\n\n{error}"
+        )
 
 
 def aggregate_regions(day: pd.DataFrame) -> pd.DataFrame:
@@ -510,6 +580,7 @@ def render_sidebar() -> None:
 
         last = load_last_updated()
         st.caption(f"資料最後更新:{last.replace('T', ' ') if last else '尚無資料'}")
+        st.caption("開頁時若資料不是今天的,會自動抓一次最新預報。")
 
         st.divider()
         st.markdown('<p class="wx-section" style="margin-top:0">資料來源</p>', unsafe_allow_html=True)
@@ -548,21 +619,25 @@ def main() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
     render_sidebar()
 
+    auto_refresh_if_stale()
+
     if not db.table_exists():
         st.markdown('<p class="wx-title">🌤️ Taiwan Weather Forecast</p>', unsafe_allow_html=True)
+        show_auto_refresh_notice()
         st.info(
             "📦 資料庫還沒建立。請點左側的「🔄 重新抓取最新資料」抓取第一份資料。\n\n"
             "也可以在終端機執行 `python -m src.pipeline`。"
         )
         return
 
-    dates = load_dates()
+    dates = upcoming_dates(load_dates())
     if not dates:
         st.markdown('<p class="wx-title">🌤️ Taiwan Weather Forecast</p>', unsafe_allow_html=True)
         st.warning("⚠️ 資料庫是空的。請點左側的「🔄 重新抓取最新資料」。")
         return
 
     selected = render_header(dates)
+    show_auto_refresh_notice()
 
     day = load_day(selected)
     if day.empty:
