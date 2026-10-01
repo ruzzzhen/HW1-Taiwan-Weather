@@ -8,6 +8,8 @@
 """
 from __future__ import annotations
 
+from datetime import date
+
 import pandas as pd
 import streamlit as st
 
@@ -16,7 +18,12 @@ from src.config import DATASET_ID, MissingAPIKeyError
 from src.fetch import WeatherAPIError
 from src.parse import ParseError
 from src.pipeline import refresh_data
-from src.regions import OUTLYING_REGION, REGION_ORDER, REGION_TO_CITIES
+from src.regions import (
+    MUNICIPALITIES,
+    OUTLYING_REGION,
+    REGION_ORDER,
+    REGION_TO_CITIES,
+)
 from src.theme import (
     HAIRLINE,
     PLANE_TOP,
@@ -108,6 +115,20 @@ CSS = f"""
 }}
 .wx-pop {{ color: {INK_MUTED}; white-space: nowrap; }}
 .wx-scale-note {{ color: {INK_MUTED}; font-size: .74rem; margin: .55rem 0 .2rem 0; }}
+.wx-map-note {{ color: {INK_MUTED}; font-size: .78rem; margin: -.25rem 0 .7rem 0; }}
+
+/* 圖表下方留白,避免下一個區塊的展開箭頭貼上來 */
+[data-testid="stPlotlyChart"] {{ margin-bottom: 1.1rem; }}
+
+/* ---- 六都小卡 ---- */
+.wx-card.wx-sm {{ padding: .85rem .9rem .8rem .9rem; border-radius: 14px; }}
+.wx-card.wx-sm .wx-region {{ font-size: .82rem; color: {INK}; letter-spacing: .02em; }}
+.wx-card.wx-sm .wx-icon {{ font-size: 1.25rem; }}
+.wx-card.wx-sm .wx-temp {{ font-size: 1.5rem; }}
+.wx-card.wx-sm .wx-temp .wx-lo {{ font-size: 1.05rem; }}
+.wx-card.wx-sm .wx-temp .wx-sep {{ font-size: .95rem; }}
+.wx-card.wx-sm .wx-bar {{ height: 6px; margin: .55rem 0 .5rem 0; }}
+.wx-card.wx-sm .wx-meta {{ font-size: .74rem; }}
 
 /* ---- 區塊標題 ---- */
 .wx-section {{
@@ -152,6 +173,20 @@ def format_date_label(date: str) -> str:
         return f"{date}({WEEKDAYS[stamp.weekday()]})"
     except (ValueError, TypeError):
         return date
+
+
+def default_date_index(dates: list) -> int:
+    """預設選今天。資料庫可能還留著昨天的預報,不處理的話開頁會看到過期資料。
+
+    找不到今天就退而選第一個「今天(含)之後」的日期,再不行才回到第 0 筆。
+    """
+    today = date.today().isoformat()
+    if today in dates:
+        return dates.index(today)
+    for index, value in enumerate(dates):
+        if value >= today:
+            return index
+    return 0
 
 
 def fmt_temp(value) -> str:
@@ -219,8 +254,9 @@ def render_header(dates: list) -> str:
         selected = st.selectbox(
             "選擇日期",
             options=dates,
+            index=default_date_index(dates),
             format_func=format_date_label,
-            help="只列出資料庫中實際有預報資料的日期",
+            help="只列出資料庫中實際有預報資料的日期,預設顯示今天",
         )
     return selected
 
@@ -262,11 +298,19 @@ def render_stats(day: pd.DataFrame) -> None:
     st.markdown(f'<div class="wx-stats">{"".join(chips)}</div>', unsafe_allow_html=True)
 
 
-def card_html(region: str, row) -> str:
-    """產生單一區域卡片的 HTML(壓成一行,避免 Streamlit 把它拆成段落)。"""
+def card_html(region: str, row, compact: bool = False) -> str:
+    """產生單一張卡片的 HTML(壓成一行,避免 Streamlit 把它拆成段落)。
+
+    Args:
+        region: 卡片標題(區域名稱或縣市名稱)。
+        row: 含「最低溫 / 最高溫 / 天氣現象 / 降雨機率」的資料列;None 代表當天無資料。
+        compact: True 時套用六都用的小卡樣式。
+    """
+    css_class = "wx-card wx-sm" if compact else "wx-card"
+
     if row is None:
         return (
-            f'<div class="wx-card"><div class="wx-card-top">'
+            f'<div class="{css_class}"><div class="wx-card-top">'
             f'<span class="wx-region">{region}</span><span class="wx-icon">❓</span></div>'
             f'<div class="wx-temp">—</div><div class="wx-bar"></div>'
             f'<div class="wx-meta"><span>這一天沒有資料</span></div></div>'
@@ -290,7 +334,7 @@ def card_html(region: str, row) -> str:
         )
 
     return (
-        f'<div class="wx-card">'
+        f'<div class="{css_class}">'
         f'<div class="wx-card-top"><span class="wx-region">{region}</span>'
         f'<span class="wx-icon">{icon}</span></div>'
         f'<div class="wx-temp"><span class="wx-lo">{fmt_temp(lo)}</span>'
@@ -318,8 +362,34 @@ def render_region_cards(table: pd.DataFrame) -> None:
     )
 
 
+def render_city_cards(day: pd.DataFrame) -> None:
+    """六都字卡,一排六張。資料直接取該縣市那一列,不做區域彙整。"""
+    st.markdown('<p class="wx-section">六都</p>', unsafe_allow_html=True)
+
+    indexed = day.set_index("city")
+    cols = st.columns(len(MUNICIPALITIES), gap="small")
+    for col, city in zip(cols, MUNICIPALITIES):
+        if city in indexed.index:
+            source = indexed.loc[city]
+            row = {
+                "最低溫": source["min_temp"],
+                "最高溫": source["max_temp"],
+                "天氣現象": source["weather"],
+                "降雨機率": source["pop"],
+            }
+        else:
+            row = None
+        with col:
+            st.markdown(card_html(city, row, compact=True), unsafe_allow_html=True)
+
+
 def render_map(day: pd.DataFrame) -> None:
     st.markdown('<p class="wx-section">各縣市氣溫分布</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="wx-map-note">圓點顏色代表當日最高溫(色階與上方溫度條相同),'
+        '滑鼠移上去可看該縣市詳細預報。</p>',
+        unsafe_allow_html=True,
+    )
 
     geo = day.dropna(subset=["lat", "lon", "max_temp"]).copy()
     if geo.empty:
@@ -391,7 +461,6 @@ def render_map(day: pd.DataFrame) -> None:
             hoverlabel=dict(bgcolor=SURFACE, font=dict(color=INK), bordercolor="rgba(11,11,11,0.15)"),
         )
         st.plotly_chart(fig, use_container_width=True)
-        st.caption("圓點顏色代表當日最高溫(色階與上方溫度條相同),滑鼠移上去可看該縣市詳細預報。")
     except Exception as exc:  # 地圖畫不出來時退回 st.map,不讓整頁掛掉
         st.warning(f"互動地圖載入失敗({exc}),改用簡易地圖顯示位置。")
         st.map(geo.rename(columns={"lat": "latitude", "lon": "longitude"}))
@@ -449,7 +518,6 @@ def render_sidebar() -> None:
             - 中央氣象署開放資料平臺
             - 資料集:`{DATASET_ID}`
               (臺灣各縣市未來一週天氣預報)
-            - 授權碼由 `.env` 讀取,不寫入程式碼
             """
         )
 
@@ -506,6 +574,7 @@ def main() -> None:
     render_stats(day)
     st.markdown('<p class="wx-section">四大區域</p>', unsafe_allow_html=True)
     render_region_cards(table)
+    render_city_cards(day)
     render_map(day)
     render_tables(day, table)
 

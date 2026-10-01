@@ -20,6 +20,9 @@ REGION_TO_CITIES = {
     OUTLYING_REGION: ["澎湖縣", "金門縣", "連江縣"],
 }
 
+#: 六都(直轄市),畫面上另外用一排字卡呈現
+MUNICIPALITIES = ["臺北市", "新北市", "桃園市", "臺中市", "臺南市", "高雄市"]
+
 #: 縣市 → 區域(由上表反轉而來)
 CITY_TO_REGION = {
     city: region for region, cities in REGION_TO_CITIES.items() for city in cities
