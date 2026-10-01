@@ -124,10 +124,26 @@ CSS = f"""
 /* 展開區之間留固定間距,標題不會貼到上一個元件 */
 [data-testid="stExpander"] {{ margin-top: .4rem; }}
 
+/* 展開區標題排成一列:箭頭固定在最左、文字接在箭頭右邊。
+   用 flex 明確指定順序與寬度,文字和箭頭就不會疊在一起。*/
+[data-testid="stExpander"] summary {{
+    display: flex; align-items: center; gap: .55rem;
+    padding-right: .9rem; padding-left: .9rem;
+}}
+[data-testid="stExpander"] summary [data-testid="stExpanderIcon"] {{
+    order: -1; flex: 0 0 auto; margin: 0;
+}}
+[data-testid="stExpander"] summary [data-testid="stMarkdownContainer"] {{
+    flex: 1 1 auto; min-width: 0;
+}}
+[data-testid="stExpander"] summary p {{
+    margin: 0; line-height: 1.6; overflow-wrap: anywhere;
+}}
+
 /* 圖表下方留白,避免下一個區塊的展開箭頭貼上來 */
 [data-testid="stPlotlyChart"] {{ min-height: 540px; margin-bottom: 1.1rem; }}
 /* 真正佔位的間隔塊,確保地圖下方的文字不會被圖蓋住 */
-.wx-spacer {{ height: 1.6rem; }}
+.wx-spacer {{ height: 2.4rem; }}
 
 /* ---- 六都小卡 ---- */
 .wx-card.wx-sm {{ padding: .85rem .9rem .8rem .9rem; border-radius: 14px; }}
