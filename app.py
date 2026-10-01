@@ -115,7 +115,14 @@ CSS = f"""
 }}
 .wx-pop {{ color: {INK_MUTED}; white-space: nowrap; }}
 .wx-scale-note {{ color: {INK_MUTED}; font-size: .74rem; margin: .55rem 0 .2rem 0; }}
-.wx-map-note {{ color: {INK_MUTED}; font-size: .78rem; margin: -.25rem 0 .7rem 0; }}
+.wx-map-note {{ color: {INK_MUTED}; font-size: .78rem; margin: .1rem 0 .7rem 0; }}
+
+/* 文字一律給足行高並允許換行,避免長字串撐出容器跟隔壁重疊 */
+.wx-section, .wx-map-note, .wx-scale-note, .wx-subtitle {{
+    line-height: 1.55; overflow-wrap: anywhere; word-break: break-word;
+}}
+/* 展開區之間留固定間距,標題不會貼到上一個元件 */
+[data-testid="stExpander"] {{ margin-top: .4rem; }}
 
 /* 圖表下方留白,避免下一個區塊的展開箭頭貼上來 */
 [data-testid="stPlotlyChart"] {{ margin-bottom: 1.1rem; }}
@@ -435,25 +442,24 @@ def render_region_cards(table: pd.DataFrame) -> None:
 
 
 def render_city_cards(day: pd.DataFrame) -> None:
-    """六都字卡,3 欄 × 2 排。資料直接取該縣市那一列,不做區域彙整。"""
+    """六都字卡,一排六張。資料直接取該縣市那一列,不做區域彙整。"""
     st.markdown('<p class="wx-section">六都</p>', unsafe_allow_html=True)
 
     indexed = day.set_index("city")
-    for start in range(0, len(MUNICIPALITIES), 3):
-        cols = st.columns(3, gap="medium")
-        for col, city in zip(cols, MUNICIPALITIES[start:start + 3]):
-            if city in indexed.index:
-                source = indexed.loc[city]
-                row = {
-                    "最低溫": source["min_temp"],
-                    "最高溫": source["max_temp"],
-                    "天氣現象": source["weather"],
-                    "降雨機率": source["pop"],
-                }
-            else:
-                row = None
-            with col:
-                st.markdown(card_html(city, row, compact=True), unsafe_allow_html=True)
+    cols = st.columns(len(MUNICIPALITIES), gap="small")
+    for col, city in zip(cols, MUNICIPALITIES):
+        if city in indexed.index:
+            source = indexed.loc[city]
+            row = {
+                "最低溫": source["min_temp"],
+                "最高溫": source["max_temp"],
+                "天氣現象": source["weather"],
+                "降雨機率": source["pop"],
+            }
+        else:
+            row = None
+        with col:
+            st.markdown(card_html(city, row, compact=True), unsafe_allow_html=True)
 
 
 def render_map(day: pd.DataFrame) -> None:
@@ -548,12 +554,15 @@ def render_tables(day: pd.DataFrame, table: pd.DataFrame) -> None:
     """
     st.markdown('<p class="wx-section">完整資料</p>', unsafe_allow_html=True)
 
+    # 欄位標題刻意保持短:中文標題加上單位(例如「降雨機率 (%)」)在窄欄位裡
+    # 會擠在一起,單位改放進數值本身,標題就不會互相重疊。
     display_cols = ["最低溫", "最高溫", "天氣現象", "降雨機率", "縣市數"]
     column_config = {
-        "最低溫": st.column_config.NumberColumn("最低溫 (°C)", format="%.0f"),
-        "最高溫": st.column_config.NumberColumn("最高溫 (°C)", format="%.0f"),
-        "降雨機率": st.column_config.NumberColumn("降雨機率 (%)", format="%d"),
-        "縣市數": st.column_config.NumberColumn("縣市數", format="%d"),
+        "最低溫": st.column_config.NumberColumn("最低溫", format="%.0f°C", width="small"),
+        "最高溫": st.column_config.NumberColumn("最高溫", format="%.0f°C", width="small"),
+        "天氣現象": st.column_config.TextColumn("天氣", width="medium"),
+        "降雨機率": st.column_config.NumberColumn("降雨", format="%d%%", width="small"),
+        "縣市數": st.column_config.NumberColumn("縣市數", format="%d", width="small"),
     }
 
     # 四大區域在前,外島等其他分區接在後面,全部收在同一張表
@@ -571,9 +580,21 @@ def render_tables(day: pd.DataFrame, table: pd.DataFrame) -> None:
 
     with st.expander(f"🔍 各縣市明細({len(day)} 縣市)", expanded=False):
         detail = day[["region", "city", "min_temp", "max_temp", "weather", "pop"]].copy()
-        detail.columns = ["區域", "縣市", "最低溫 (°C)", "最高溫 (°C)", "天氣現象", "降雨機率 (%)"]
+        detail.columns = ["區域", "縣市", "最低溫", "最高溫", "天氣", "降雨"]
         detail = detail.sort_values(["區域", "縣市"]).reset_index(drop=True)
-        st.dataframe(detail, width="stretch", hide_index=True)
+        st.dataframe(
+            detail,
+            width="stretch",
+            hide_index=True,
+            column_config={
+                "區域": st.column_config.TextColumn("區域", width="small"),
+                "縣市": st.column_config.TextColumn("縣市", width="small"),
+                "最低溫": st.column_config.NumberColumn("最低溫", format="%.0f°C", width="small"),
+                "最高溫": st.column_config.NumberColumn("最高溫", format="%.0f°C", width="small"),
+                "天氣": st.column_config.TextColumn("天氣", width="medium"),
+                "降雨": st.column_config.NumberColumn("降雨", format="%d%%", width="small"),
+            },
+        )
 
 
 def render_sidebar() -> None:
