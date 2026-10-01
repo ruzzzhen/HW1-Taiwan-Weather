@@ -125,7 +125,9 @@ CSS = f"""
 [data-testid="stExpander"] {{ margin-top: .4rem; }}
 
 /* 圖表下方留白,避免下一個區塊的展開箭頭貼上來 */
-[data-testid="stPlotlyChart"] {{ margin-bottom: 1.1rem; }}
+[data-testid="stPlotlyChart"] {{ min-height: 540px; margin-bottom: 1.1rem; }}
+/* 真正佔位的間隔塊,確保地圖下方的文字不會被圖蓋住 */
+.wx-spacer {{ height: 1.6rem; }}
 
 /* ---- 六都小卡 ---- */
 .wx-card.wx-sm {{ padding: .85rem .9rem .8rem .9rem; border-radius: 14px; }}
@@ -540,6 +542,7 @@ def render_map(day: pd.DataFrame) -> None:
             hoverlabel=dict(bgcolor=SURFACE, font=dict(color=INK), bordercolor="rgba(11,11,11,0.15)"),
         )
         st.plotly_chart(fig, use_container_width=True)
+        st.markdown('<div class="wx-spacer"></div>', unsafe_allow_html=True)
     except Exception as exc:  # 地圖畫不出來時退回 st.map,不讓整頁掛掉
         st.warning(f"互動地圖載入失敗({exc}),改用簡易地圖顯示位置。")
         st.map(geo.rename(columns={"lat": "latitude", "lon": "longitude"}))
@@ -548,35 +551,28 @@ def render_map(day: pd.DataFrame) -> None:
 def render_tables(day: pd.DataFrame, table: pd.DataFrame) -> None:
     """完整表格放在展開區:既是明細,也是色彩之外的第二種讀法。
 
-    兩張表刻意分成不同層級、不重複同一份資訊:
-    * 區域表只到區域層級(用「縣市數」而不是列出縣市名,縣市名在下面那張表)
-    * 明細表才是逐縣市,外島也含在裡面,所以不再另外開一個「其他地區」展開區
+    欄位標題刻意保持短 —— 中文標題再加上單位(例如「降雨機率 (%)」)在窄欄位裡
+    會互相擠在一起,所以單位改放進數值本身。
     """
     st.markdown('<p class="wx-section">完整資料</p>', unsafe_allow_html=True)
 
-    # 欄位標題刻意保持短:中文標題加上單位(例如「降雨機率 (%)」)在窄欄位裡
-    # 會擠在一起,單位改放進數值本身,標題就不會互相重疊。
-    display_cols = ["最低溫", "最高溫", "天氣現象", "降雨機率", "縣市數"]
+    display_cols = ["最低溫", "最高溫", "天氣現象", "降雨機率", "包含縣市"]
     column_config = {
         "最低溫": st.column_config.NumberColumn("最低溫", format="%.0f°C", width="small"),
         "最高溫": st.column_config.NumberColumn("最高溫", format="%.0f°C", width="small"),
-        "天氣現象": st.column_config.TextColumn("天氣", width="medium"),
+        "天氣現象": st.column_config.TextColumn("天氣", width="small"),
         "降雨機率": st.column_config.NumberColumn("降雨", format="%d%%", width="small"),
-        "縣市數": st.column_config.NumberColumn("縣市數", format="%d", width="small"),
+        "包含縣市": st.column_config.TextColumn("包含縣市", width="large"),
     }
 
-    # 四大區域在前,外島等其他分區接在後面,全部收在同一張表
-    ordered = [r for r in REGION_ORDER if r in table.index]
-    ordered += [r for r in table.index if r not in REGION_ORDER]
-
-    with st.expander("📋 區域彙整表", expanded=False):
-        if ordered:
-            summary = table.loc[ordered, display_cols].copy()
-            summary.index.name = "區域"
-            st.dataframe(summary, width="stretch", column_config=column_config)
-            st.caption("最低溫取該區縣市的最小值、最高溫取最大值;各縣市名稱請看下一張表。")
+    main_rows = [r for r in REGION_ORDER if r in table.index]
+    with st.expander("📋 四大區域彙整表", expanded=False):
+        if main_rows:
+            main = table.loc[main_rows, display_cols].copy()
+            main.index.name = "區域"
+            st.dataframe(main, width="stretch", column_config=column_config)
         else:
-            st.warning("這一天沒有任何區域資料。")
+            st.warning("這一天沒有四大區域的資料。")
 
     with st.expander(f"🔍 各縣市明細({len(day)} 縣市)", expanded=False):
         detail = day[["region", "city", "min_temp", "max_temp", "weather", "pop"]].copy()
@@ -595,6 +591,15 @@ def render_tables(day: pd.DataFrame, table: pd.DataFrame) -> None:
                 "降雨": st.column_config.NumberColumn("降雨", format="%d%%", width="small"),
             },
         )
+
+    other_rows = [r for r in table.index if r not in REGION_ORDER]
+    if other_rows:
+        with st.expander(f"🏝️ 其他地區({'、'.join(other_rows)})", expanded=False):
+            st.dataframe(
+                table.loc[other_rows, display_cols],
+                width="stretch",
+                column_config=column_config,
+            )
 
 
 def render_sidebar() -> None:
