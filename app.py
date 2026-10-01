@@ -418,6 +418,8 @@ def card_html(region: str, row, compact: bool = False) -> str:
 
 def render_region_cards(table: pd.DataFrame) -> None:
     """四大區域卡片,一排四張。"""
+    st.markdown('<p class="wx-section">四大區域</p>', unsafe_allow_html=True)
+
     cols = st.columns(len(REGION_ORDER), gap="medium")
     for col, region in zip(cols, REGION_ORDER):
         row = table.loc[region] if region in table.index else None
@@ -433,24 +435,25 @@ def render_region_cards(table: pd.DataFrame) -> None:
 
 
 def render_city_cards(day: pd.DataFrame) -> None:
-    """六都字卡,一排六張。資料直接取該縣市那一列,不做區域彙整。"""
+    """六都字卡,3 欄 × 2 排。資料直接取該縣市那一列,不做區域彙整。"""
     st.markdown('<p class="wx-section">六都</p>', unsafe_allow_html=True)
 
     indexed = day.set_index("city")
-    cols = st.columns(len(MUNICIPALITIES), gap="small")
-    for col, city in zip(cols, MUNICIPALITIES):
-        if city in indexed.index:
-            source = indexed.loc[city]
-            row = {
-                "最低溫": source["min_temp"],
-                "最高溫": source["max_temp"],
-                "天氣現象": source["weather"],
-                "降雨機率": source["pop"],
-            }
-        else:
-            row = None
-        with col:
-            st.markdown(card_html(city, row, compact=True), unsafe_allow_html=True)
+    for start in range(0, len(MUNICIPALITIES), 3):
+        cols = st.columns(3, gap="medium")
+        for col, city in zip(cols, MUNICIPALITIES[start:start + 3]):
+            if city in indexed.index:
+                source = indexed.loc[city]
+                row = {
+                    "最低溫": source["min_temp"],
+                    "最高溫": source["max_temp"],
+                    "天氣現象": source["weather"],
+                    "降雨機率": source["pop"],
+                }
+            else:
+                row = None
+            with col:
+                st.markdown(card_html(city, row, compact=True), unsafe_allow_html=True)
 
 
 def render_map(day: pd.DataFrame) -> None:
@@ -537,39 +540,40 @@ def render_map(day: pd.DataFrame) -> None:
 
 
 def render_tables(day: pd.DataFrame, table: pd.DataFrame) -> None:
-    """完整表格放在展開區:既是明細,也是色彩之外的第二種讀法。"""
+    """完整表格放在展開區:既是明細,也是色彩之外的第二種讀法。
+
+    兩張表刻意分成不同層級、不重複同一份資訊:
+    * 區域表只到區域層級(用「縣市數」而不是列出縣市名,縣市名在下面那張表)
+    * 明細表才是逐縣市,外島也含在裡面,所以不再另外開一個「其他地區」展開區
+    """
     st.markdown('<p class="wx-section">完整資料</p>', unsafe_allow_html=True)
 
-    display_cols = ["最低溫", "最高溫", "天氣現象", "降雨機率", "包含縣市"]
+    display_cols = ["最低溫", "最高溫", "天氣現象", "降雨機率", "縣市數"]
     column_config = {
         "最低溫": st.column_config.NumberColumn("最低溫 (°C)", format="%.0f"),
         "最高溫": st.column_config.NumberColumn("最高溫 (°C)", format="%.0f"),
         "降雨機率": st.column_config.NumberColumn("降雨機率 (%)", format="%d"),
+        "縣市數": st.column_config.NumberColumn("縣市數", format="%d"),
     }
 
-    main_rows = [r for r in REGION_ORDER if r in table.index]
-    with st.expander("📋 四大區域彙整表", expanded=False):
-        if main_rows:
-            main = table.loc[main_rows, display_cols].copy()
-            main.index.name = "區域"
-            st.dataframe(main, width="stretch", column_config=column_config)
-        else:
-            st.warning("這一天沒有四大區域的資料。")
+    # 四大區域在前,外島等其他分區接在後面,全部收在同一張表
+    ordered = [r for r in REGION_ORDER if r in table.index]
+    ordered += [r for r in table.index if r not in REGION_ORDER]
 
-    with st.expander("🔍 各縣市明細(22 縣市)", expanded=False):
+    with st.expander("📋 區域彙整表", expanded=False):
+        if ordered:
+            summary = table.loc[ordered, display_cols].copy()
+            summary.index.name = "區域"
+            st.dataframe(summary, width="stretch", column_config=column_config)
+            st.caption("最低溫取該區縣市的最小值、最高溫取最大值;各縣市名稱請看下一張表。")
+        else:
+            st.warning("這一天沒有任何區域資料。")
+
+    with st.expander(f"🔍 各縣市明細({len(day)} 縣市)", expanded=False):
         detail = day[["region", "city", "min_temp", "max_temp", "weather", "pop"]].copy()
         detail.columns = ["區域", "縣市", "最低溫 (°C)", "最高溫 (°C)", "天氣現象", "降雨機率 (%)"]
         detail = detail.sort_values(["區域", "縣市"]).reset_index(drop=True)
         st.dataframe(detail, width="stretch", hide_index=True)
-
-    other_rows = [r for r in table.index if r not in REGION_ORDER]
-    if other_rows:
-        with st.expander(f"🏝️ 其他地區({'、'.join(other_rows)})", expanded=False):
-            st.dataframe(
-                table.loc[other_rows, display_cols],
-                width="stretch",
-                column_config=column_config,
-            )
 
 
 def render_sidebar() -> None:
@@ -647,9 +651,8 @@ def main() -> None:
     table = aggregate_regions(day)
 
     render_stats(day)
-    st.markdown('<p class="wx-section">四大區域</p>', unsafe_allow_html=True)
-    render_region_cards(table)
     render_city_cards(day)
+    render_region_cards(table)
     render_map(day)
     render_tables(day, table)
 
