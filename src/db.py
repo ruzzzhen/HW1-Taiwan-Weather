@@ -102,6 +102,9 @@ def upsert_forecasts(rows: Iterable[dict], db_path: PathLike = DB_PATH) -> int:
 
 
 def _fetch(sql: str, params: Sequence = (), db_path: PathLike = DB_PATH) -> list[dict]:
+    # 雲端首次部署時資料庫還不存在,查詢前沒先建表會拋 no such table
+    if not table_exists(db_path):
+        return []
     with connect(db_path) as conn:
         return [dict(row) for row in conn.execute(sql, params).fetchall()]
 
@@ -125,12 +128,16 @@ def get_all(db_path: PathLike = DB_PATH) -> list[dict]:
 
 
 def count_rows(db_path: PathLike = DB_PATH) -> int:
+    if not table_exists(db_path):
+        return 0
     with connect(db_path) as conn:
         return int(conn.execute("SELECT COUNT(*) FROM forecast").fetchone()[0])
 
 
 def get_last_updated(db_path: PathLike = DB_PATH) -> Optional[str]:
-    """回傳最後一次寫入時間;資料庫空的就回 None。"""
+    """回傳最後一次寫入時間;資料庫空的或還沒建表就回 None。"""
+    if not table_exists(db_path):
+        return None
     with connect(db_path) as conn:
         value = conn.execute("SELECT MAX(updated_at) FROM forecast").fetchone()[0]
     return value

@@ -674,9 +674,9 @@ def render_sidebar() -> None:
 # --------------------------------------------------------------------------
 def main() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
-    render_sidebar()
-
+    # 先自動更新再畫側邊欄,側邊欄的「最後更新」時間才會是剛抓到的
     auto_refresh_if_stale()
+    render_sidebar()
 
     if not db.table_exists():
         st.markdown('<p class="wx-title">🌤️ Taiwan Weather Forecast</p>', unsafe_allow_html=True)

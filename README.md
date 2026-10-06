@@ -4,19 +4,12 @@
 程式呼叫 CWA `F-D0047-091`(各縣市未來一週預報),把 22 縣市歸類成北、中、南、東四區,
 每日彙整最低溫、最高溫、天氣與降雨機率後存進 SQLite,網頁再從資料庫讀取呈現。
 
-## 🖼️ 成果展示
+## 🔗 連結
 
-### 首頁 — 六都與四大區域卡片
-
-![首頁](docs/images/screenshot-home.png)
-
-### 互動地圖 — 圓點顏色代表當日最高溫
-
-![地圖](docs/images/screenshot-map.png)
-
-### 完整資料 — 區域彙整與各縣市明細
-
-![明細](docs/images/screenshot-detail.png)
+- **Live Website**:<https://hw1-taiwan-weather.streamlit.app/>
+  — 部署在 Streamlit Community Cloud 的線上版本,打開就能直接使用網頁(選日期、看區域卡片與互動地圖),不用自己安裝或設定 API Key。
+- **GitHub Repository**:<https://github.com/ruzzzhen/HW1-Taiwan-Weather>
+  — 專案的完整原始碼、測試與安裝說明。
 
 ## ✨ 功能
 
@@ -24,7 +17,7 @@
 - 四大區域卡片、六都字卡、全寬互動地圖與完整表格
 - SQLite 以 `UNIQUE(city, date)` + upsert 寫入,重複抓取不會產生重複資料
 - API Key 只放在 `.env`(已被 `.gitignore` 排除),錯誤訊息會自動遮蔽金鑰
-- 88 個 pytest 測試,全部不呼叫真實 API
+- 89 個 pytest 測試,全部不呼叫真實 API
 
 ## 🚀 執行方式
 

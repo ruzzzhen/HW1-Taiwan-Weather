@@ -145,6 +145,14 @@ def test_get_last_updated(db_path):
     assert db.get_last_updated(db_path) is not None
 
 
+def test_reads_on_missing_database_return_empty(db_path):
+    """雲端首次部署時還沒有資料庫,查詢不該拋 no such table。"""
+    assert db.get_last_updated(db_path) is None
+    assert db.get_dates(db_path) == []
+    assert db.get_all(db_path) == []
+    assert db.count_rows(db_path) == 0
+
+
 # ---------- 與解析器串接 ----------
 def test_parsed_fixture_can_be_written_and_read_back(sample_payload, db_path):
     """解析 → 寫入 → 讀回,欄位要能對得上(不呼叫任何 API)。"""
