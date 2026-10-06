@@ -145,6 +145,12 @@ CSS = f"""
 /* 真正佔位的間隔塊,確保地圖下方的文字不會被圖蓋住 */
 .wx-spacer {{ height: 2.4rem; }}
 
+/* 區塊分隔:固定高度保證實際佔位,中間一條細線把上下段落分開 */
+.wx-divider {{ height: 3.4rem; display: flex; align-items: center; }}
+.wx-divider span {{
+    display: block; width: 100%; height: 1px; background: rgba(11,11,11,0.09);
+}}
+
 /* ---- 六都小卡 ---- */
 .wx-card.wx-sm {{ padding: .85rem .9rem .8rem .9rem; border-radius: 14px; }}
 .wx-card.wx-sm .wx-region {{ font-size: .82rem; color: {INK}; letter-spacing: .02em; }}
@@ -481,6 +487,7 @@ def render_city_cards(day: pd.DataFrame) -> None:
 
 
 def render_map(day: pd.DataFrame) -> None:
+    st.markdown('<div class="wx-divider"><span></span></div>', unsafe_allow_html=True)
     st.markdown('<p class="wx-section">各縣市氣溫分布</p>', unsafe_allow_html=True)
     st.markdown(
         '<p class="wx-map-note">圓點顏色代表當日最高溫(色階與上方溫度條相同),'
