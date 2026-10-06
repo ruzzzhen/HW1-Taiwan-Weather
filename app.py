@@ -114,7 +114,10 @@ CSS = f"""
     font-size: .8rem; color: {INK_SECONDARY}; gap: .5rem;
 }}
 .wx-pop {{ color: {INK_MUTED}; white-space: nowrap; }}
-.wx-scale-note {{ color: {INK_MUTED}; font-size: .74rem; margin: .55rem 0 .2rem 0; }}
+.wx-scale-note {{
+    color: {INK_MUTED}; font-size: .74rem; margin: 0;
+    padding-top: 1.15rem; padding-bottom: .2rem;
+}}
 .wx-map-note {{ color: {INK_MUTED}; font-size: .78rem; margin: .1rem 0 .7rem 0; }}
 
 /* 文字一律給足行高並允許換行,避免長字串撐出容器跟隔壁重疊 */
@@ -145,11 +148,8 @@ CSS = f"""
 /* 真正佔位的間隔塊,確保地圖下方的文字不會被圖蓋住 */
 .wx-spacer {{ height: 2.4rem; }}
 
-/* 區塊分隔:固定高度保證實際佔位,中間一條細線把上下段落分開 */
-.wx-divider {{ height: 3.4rem; display: flex; align-items: center; }}
-.wx-divider span {{
-    display: block; width: 100%; height: 1px; background: rgba(11,11,11,0.09);
-}}
+/* 區塊分隔:只留空白,不畫線 */
+.wx-divider {{ height: 1.2rem; }}
 
 /* ---- 六都小卡 ---- */
 .wx-card.wx-sm {{ padding: .85rem .9rem .8rem .9rem; border-radius: 14px; }}
@@ -164,7 +164,8 @@ CSS = f"""
 /* ---- 區塊標題 ---- */
 .wx-section {{
     color: {INK_SECONDARY}; font-size: .9rem; font-weight: 600;
-    letter-spacing: .04em; margin: 1.6rem 0 .6rem 0;
+    letter-spacing: .04em; margin: 0;
+    padding-top: 1.9rem; padding-bottom: .55rem;
 }}
 </style>
 """
@@ -487,7 +488,7 @@ def render_city_cards(day: pd.DataFrame) -> None:
 
 
 def render_map(day: pd.DataFrame) -> None:
-    st.markdown('<div class="wx-divider"><span></span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="wx-divider"></div>', unsafe_allow_html=True)
     st.markdown('<p class="wx-section">各縣市氣溫分布</p>', unsafe_allow_html=True)
     st.markdown(
         '<p class="wx-map-note">圓點顏色代表當日最高溫(色階與上方溫度條相同),'
