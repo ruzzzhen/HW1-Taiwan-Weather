@@ -501,8 +501,12 @@ def render_map(day: pd.DataFrame) -> None:
         st.info("這一天沒有可繪製地圖的座標或溫度資料。")
         return
 
-    geo["降雨機率"] = geo["pop"].apply(lambda v: "—" if pd.isna(v) else f"{v:.0f}%")
-    geo["天氣"] = geo["weather"].fillna("—")
+    # 先把要顯示的欄位格式化成字串,缺值顯示「—」。
+    # 直接丟數字給 hovertemplate 的話,缺值會變成 "nan"。
+    geo["_lo"] = geo["min_temp"].apply(lambda v: "—" if pd.isna(v) else f"{v:.0f}°C")
+    geo["_hi"] = geo["max_temp"].apply(lambda v: "—" if pd.isna(v) else f"{v:.0f}°C")
+    geo["_weather"] = geo["weather"].fillna("—")
+    geo["_pop"] = geo["pop"].apply(lambda v: "—" if pd.isna(v) else f"{v:.0f}%")
 
     try:
         import plotly.express as px
@@ -513,28 +517,29 @@ def render_map(day: pd.DataFrame) -> None:
             lon="lon",
             color="max_temp",
             hover_name="city",
-            hover_data={
-                "region": True,
-                "min_temp": ":.0f",
-                "max_temp": ":.0f",
-                "天氣": True,
-                "降雨機率": True,
-                "lat": False,
-                "lon": False,
-            },
+            hover_data=None,
             color_continuous_scale=TEMP_RAMP,
             range_color=TEMP_DOMAIN,
-            labels={
-                "max_temp": "最高溫 (°C)",
-                "min_temp": "最低溫 (°C)",
-                "region": "區域",
-            },
             zoom=6.15,
             center={"lat": 23.75, "lon": 120.95},
             height=540,
-            map_style="carto-voyager",
+            # OSM 圖磚用當地語言,台灣的地名會是中文;carto 系列是英文,
+            # 跟整個介面的中文不一致,所以改用 open-street-map。
+            map_style="open-street-map",
         )
-        fig.update_traces(marker={"size": 16, "opacity": 1.0})
+
+        # 自訂 hover 內容:plotly 預設是「欄位=值」一行一個,讀起來很雜。
+        fig.update_traces(
+            marker={"size": 16, "opacity": 1.0},
+            customdata=geo[["region", "_lo", "_hi", "_weather", "_pop"]].to_numpy(),
+            hovertemplate=(
+                "<b>%{hovertext}</b>　%{customdata[0]}<br>"
+                "氣溫　%{customdata[1]} ～ %{customdata[2]}<br>"
+                "天氣　%{customdata[3]}<br>"
+                "降雨機率　%{customdata[4]}"
+                "<extra></extra>"  # 關掉右側那塊多餘的 trace 標籤
+            ),
+        )
 
         # scattermap 的 marker 不支援 line(外框),所以在彩色點底下疊一層
         # 稍大的白點當作「底環」,彩色點放到有顏色的底圖上才不會糊掉。
