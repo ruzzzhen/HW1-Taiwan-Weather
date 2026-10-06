@@ -68,11 +68,11 @@ HW1-Taiwan-Weather/
 │   └── probe_api.py            # 資料集探測腳本(分析 JSON 結構用)
 ├── tests/
 │   ├── fixtures/sample_forecast.json   # 測試用假資料
-│   ├── test_parse.py           # 解析測試(22 項)
+│   ├── test_parse.py           # 解析測試(23 項)
 │   ├── test_db.py              # 資料庫測試(17 項)
 │   ├── test_fetch.py           # API 錯誤處理測試(11 項)
 │   ├── test_config.py          # 金鑰讀取測試(5 項)
-│   ├── test_regions.py         # 區域對應測試(8 項)
+│   ├── test_regions.py         # 區域對應測試(7 項)
 │   ├── test_app.py             # 日期過濾與自動更新判斷測試(12 項)
 │   └── test_theme.py           # 色階與 emoji 測試(13 項)
 ├── app.py                      # Streamlit 主程式
