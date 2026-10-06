@@ -611,11 +611,9 @@ def render_tables(day: pd.DataFrame, table: pd.DataFrame) -> None:
     other_rows = [r for r in table.index if r not in REGION_ORDER]
     if other_rows:
         with st.expander(f"🏝️ 其他地區({'、'.join(other_rows)})", expanded=False):
-            st.dataframe(
-                table.loc[other_rows, display_cols],
-                width="stretch",
-                column_config=column_config,
-            )
+            others = table.loc[other_rows, display_cols].copy()
+            others.index.name = "區域"  # 不設的話索引欄會顯示英文欄名 region
+            st.dataframe(others, width="stretch", column_config=column_config)
 
 
 def render_sidebar() -> None:

@@ -155,20 +155,17 @@ streamlit run app.py
 
 ## 🖼️ 畫面截圖
 
-> 請把你自己的截圖放到 `docs/images/` 後,取消下面的註解。
+### 首頁 — 六都與四大區域卡片
 
-<!--
-### 首頁 — 區域氣溫表格與指標
 ![首頁](docs/images/screenshot-home.png)
 
 ### 互動地圖
+
 ![地圖](docs/images/screenshot-map.png)
 
-### 各縣市明細
-![明細](docs/images/screenshot-detail.png)
--->
+### 完整資料 — 區域彙整與各縣市明細
 
-_(截圖位置,待補)_
+![明細](docs/images/screenshot-detail.png)
 
 ---
 
