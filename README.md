@@ -6,7 +6,7 @@
 
 ## 🔗 連結
 
-- **Live Website**:<https://hw1-taiwan-weather.streamlit.app/>
+- **Streamlit App**:<https://hw1-taiwan-weather.streamlit.app/>
   — 部署在 Streamlit Community Cloud 的線上版本,打開就能直接使用網頁(選日期、看區域卡片與互動地圖),不用自己安裝或設定 API Key。
 - **GitHub Repository**:<https://github.com/ruzzzhen/HW1-Taiwan-Weather>
   — 專案的完整原始碼、測試與安裝說明。
